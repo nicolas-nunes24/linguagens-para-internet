@@ -11,14 +11,12 @@ class Base {
         $this->pdo = $pdo;
     }
 
-    // ==========================================
-    // Getters
-    // ==========================================
+   
     public function getIdBases() {
         return $this->id_bases;
     }
     public function getIdPlaneta() {
-        // FIXED: Was trying to return $this->idplaneta instead of $this->id_planeta
+       
         return $this->id_planeta;
     }
     public function getNomeBase() {
@@ -28,9 +26,7 @@ class Base {
         return $this->anofundacao;
     }
 
-    // ==========================================
-    // Setters
-    // ==========================================
+    
     public function setIdBases($id_bases) {
         $this->id_bases = $id_bases;
     }
@@ -38,22 +34,20 @@ class Base {
         $this->id_planeta = $id_planeta;
     }
     
-    // FIXED: Renamed from setEmail()
+   
     public function setNomeBase($nomeBase) {
         $this->nomeBase = $nomeBase;
     }
     
-    // FIXED: Renamed from setCargo()
+   
     public function setAnoFundacao($anofundacao) {
         $this->anofundacao = $anofundacao;
     }
 
-    // ==========================================
-    // CRUD Operations
-    // ==========================================
+    
     public function save() {
         if ($this->id_bases) {
-            // FIXED: Typo "nomobase" changed to "nomeBase". Updated column names to match SQL schema.
+           
             $sql = "UPDATE Bases SET Id_planeta = :idp, nomeBase = :nb, Anofundacao = :af WHERE Id_bases = :id";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute([

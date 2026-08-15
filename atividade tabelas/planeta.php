@@ -3,7 +3,7 @@ class Planeta {
     private $id_planeta;
     private $nomePlaneta;
     private $classificacao;
-    private $distanciaAnosLuzTerra; // Aligned with SQL schema
+    private $distanciaAnosLuzTerra; 
 
     private $pdo;
 
@@ -11,9 +11,6 @@ class Planeta {
         $this->pdo = $pdo;
     }
 
-    // ==========================================
-    // Getters
-    // ==========================================
     public function getIdPlaneta() {
         return $this->id_planeta;
     }
@@ -27,11 +24,9 @@ class Planeta {
         return $this->distanciaAnosLuzTerra;
     }
 
-    // ==========================================
-    // Setters
-    // ==========================================
+
     public function setIdPlaneta($id_planeta) {
-        // FIXED: Was $this->id = $id_planeta
+      
         $this->id_planeta = $id_planeta; 
     }
     public function setNomePlaneta($nomePlaneta) {
@@ -44,11 +39,9 @@ class Planeta {
         $this->distanciaAnosLuzTerra = $distanciaAnosLuzTerra;
     }
 
-    // ==========================================
-    // CRUD Operations
-    // ==========================================
+
     public function save() {
-        // FIXED: Was checking $this->id instead of $this->id_planeta
+        
         if ($this->id_planeta) { 
             $sql = "UPDATE Planeta SET nomePlaneta = :np, Classificacao = :c, DistanciaAnosLuzTerra = :d WHERE Id_planeta = :id";
             $stmt = $this->pdo->prepare($sql);
@@ -68,7 +61,7 @@ class Planeta {
             ]);
             
             if ($ok) {
-                // FIXED: Was assigning to $this->id
+               
                 $this->id_planeta = $this->pdo->lastInsertId(); 
             }
             return $ok;
@@ -80,7 +73,7 @@ class Planeta {
         $stmt->execute([':id' => $id_planeta]);
         
         if ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            // FIXED: Updated keys to match SQL schema capitalization to prevent undefined index errors
+          
             $this->id_planeta            = $dados['Id_planeta'];
             $this->nomePlaneta           = $dados['nomePlaneta']; 
             $this->classificacao         = $dados['Classificacao'];

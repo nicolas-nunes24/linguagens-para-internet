@@ -4,19 +4,17 @@ class Usuario {
     private $nome;
     private $email;
     private $cargo;
-    private $ativo; // Added to support Soft Deletes
+    private $ativo; 
 
     private $pdo;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
-        $this->ativo = true; // Default to true for new users
+        $this->ativo = true; 
     }
 
-    // ==========================================
-    // Getters
-    // ==========================================
-    public function getIdUsuario() { // Fixed name
+   
+    public function getIdUsuario() { 
         return $this->id_usuario;
     }
     public function getNome() {
@@ -32,10 +30,8 @@ class Usuario {
         return $this->ativo;
     }
 
-    // ==========================================
-    // Setters
-    // ==========================================
-    public function setIdUsuario($id_usuario) { // Fixed name
+ 
+    public function setIdUsuario($id_usuario) { 
         $this->id_usuario = $id_usuario;
     }
     public function setNome($nome) {
@@ -51,11 +47,9 @@ class Usuario {
         $this->ativo = $ativo;
     }
 
-    // ==========================================
-    // CRUD Operations
-    // ==========================================
+
     public function save() {
-        if ($this->id_usuario) { // Fixed: was $this->id
+        if ($this->id_usuario) { 
             $sql = "UPDATE Usuario SET Nome = :n, Email = :e, Cargo = :c, Ativo = :a WHERE Id_usuario = :id";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute([
@@ -76,7 +70,7 @@ class Usuario {
             ]);
             
             if ($ok) {
-                $this->id_usuario = $this->pdo->lastInsertId(); // Fixed: was $this->id
+                $this->id_usuario = $this->pdo->lastInsertId(); 
             }
             return $ok;
         }
@@ -87,7 +81,7 @@ class Usuario {
         $stmt->execute([':id' => $id_usuario]);
         
         if ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            // Fixed: Matched array keys to the exact casing of the SQL schema
+            
             $this->id_usuario = $dados['Id_usuario'];
             $this->nome       = $dados['Nome'];
             $this->email      = $dados['Email'];
@@ -113,7 +107,6 @@ class Usuario {
     }
 
     public static function all(PDO $pdo, $onlyActive = true) {
-        // Optional feature: Fetch only active users by default
         $sql = $onlyActive ? "SELECT * FROM Usuario WHERE Ativo = TRUE" : "SELECT * FROM Usuario";
         $stmt = $pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
