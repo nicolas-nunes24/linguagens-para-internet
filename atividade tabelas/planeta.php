@@ -1,9 +1,9 @@
 <?php
 class Planeta {
-    private $id;
-    private $nomeplaneta;
+    private $id_planeta;
+    private $nomePlaneta;
     private $classificacao;
-    private $distanciaTerraAnosLuz;
+    private $distanciaAnosLuzTerra; // Aligned with SQL schema
 
     private $pdo;
 
@@ -11,80 +11,93 @@ class Planeta {
         $this->pdo = $pdo;
     }
 
+    // ==========================================
     // Getters
-    public function getId() {
-        return $this->id;
+    // ==========================================
+    public function getIdPlaneta() {
+        return $this->id_planeta;
     }
     public function getNomePlaneta() {
-        return $this->nomeplaneta;
+        return $this->nomePlaneta;
     }
     public function getClassificacao() {
         return $this->classificacao;
     }
-    public function getDistanciaTerraAnosLuz() {
-        return $this->distanciaTerraAnosLuz;
+    public function getDistanciaAnosLuzTerra() {
+        return $this->distanciaAnosLuzTerra;
     }
 
+    // ==========================================
     // Setters
-    public function setId($id) {
-        $this->id = $id;
+    // ==========================================
+    public function setIdPlaneta($id_planeta) {
+        // FIXED: Was $this->id = $id_planeta
+        $this->id_planeta = $id_planeta; 
     }
-    public function setNomePlaneta($nomeplaneta) {
-        $this->nomeplaneta = $nomeplaneta; // Fixed from $this->planeta
+    public function setNomePlaneta($nomePlaneta) {
+        $this->nomePlaneta = $nomePlaneta;
     }
     public function setClassificacao($classificacao) {
         $this->classificacao = $classificacao;
     }
-    public function setDistanciaTerraAnosLuz($distanciaTerraAnosLuz) {
-        $this->distanciaTerraAnosLuz = $distanciaTerraAnosLuz;
+    public function setDistanciaAnosLuzTerra($distanciaAnosLuzTerra) {
+        $this->distanciaAnosLuzTerra = $distanciaAnosLuzTerra;
     }
 
+    // ==========================================
+    // CRUD Operations
+    // ==========================================
     public function save() {
-        if ($this->id) {
-            $sql = "UPDATE planeta SET nomeplaneta = :np, classificacao = :c, distanciaTerraAnosLuz = :d WHERE id = :id";
+        // FIXED: Was checking $this->id instead of $this->id_planeta
+        if ($this->id_planeta) { 
+            $sql = "UPDATE Planeta SET nomePlaneta = :np, Classificacao = :c, DistanciaAnosLuzTerra = :d WHERE Id_planeta = :id";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute([
-                ':np' => $this->nomeplaneta,
+                ':np' => $this->nomePlaneta,
                 ':c'  => $this->classificacao,
-                ':d'  => $this->distanciaTerraAnosLuz,
-                ':id' => $this->id
+                ':d'  => $this->distanciaAnosLuzTerra,
+                ':id' => $this->id_planeta
             ]);
         } else {
-            $sql = "INSERT INTO planeta (nomeplaneta, classificacao, distanciaTerraAnosLuz) VALUES (:np, :c, :d)";
+            $sql = "INSERT INTO Planeta (nomePlaneta, Classificacao, DistanciaAnosLuzTerra) VALUES (:np, :c, :d)";
             $stmt = $this->pdo->prepare($sql);
             $ok = $stmt->execute([
-                ':np' => $this->nomeplaneta, // Fixed from ':p' to ':np'
+                ':np' => $this->nomePlaneta,
                 ':c'  => $this->classificacao,
-                ':d'  => $this->distanciaTerraAnosLuz
+                ':d'  => $this->distanciaAnosLuzTerra
             ]);
+            
             if ($ok) {
-                $this->id = $this->pdo->lastInsertId();
+                // FIXED: Was assigning to $this->id
+                $this->id_planeta = $this->pdo->lastInsertId(); 
             }
             return $ok;
         }
     }
 
-    public function load($id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM planeta WHERE id = :id");
-        $stmt->execute([':id' => $id]);
+    public function load($id_planeta) {
+        $stmt = $this->pdo->prepare("SELECT * FROM Planeta WHERE Id_planeta = :id");
+        $stmt->execute([':id' => $id_planeta]);
+        
         if ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $this->id = $dados['id'];
-            $this->nomeplaneta = $dados['nomeplaneta']; // Fixed from $dados['planeta']
-            $this->classificacao = $dados['classificacao'];
-            $this->distanciaTerraAnosLuz = $dados['distanciaTerraAnosLuz'];
+            // FIXED: Updated keys to match SQL schema capitalization to prevent undefined index errors
+            $this->id_planeta            = $dados['Id_planeta'];
+            $this->nomePlaneta           = $dados['nomePlaneta']; 
+            $this->classificacao         = $dados['Classificacao'];
+            $this->distanciaAnosLuzTerra = $dados['DistanciaAnosLuzTerra'];
             return true;
         }
         return false;
     }
 
     public function delete() {
-        if (!$this->id) return false;
-        $stmt = $this->pdo->prepare("DELETE FROM planeta WHERE id = :id");
-        return $stmt->execute([':id' => $this->id]);
+        if (!$this->id_planeta) return false;
+        $stmt = $this->pdo->prepare("DELETE FROM Planeta WHERE Id_planeta = :id");
+        return $stmt->execute([':id' => $this->id_planeta]);
     }
 
     public static function all(PDO $pdo) {
-        $stmt = $pdo->query("SELECT * FROM planeta");
+        $stmt = $pdo->query("SELECT * FROM Planeta");
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }

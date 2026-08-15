@@ -1,19 +1,23 @@
 <?php
 class Usuario {
-    private $id;
+    private $id_usuario;
     private $nome;
     private $email;
     private $cargo;
+    private $ativo; // Added to support Soft Deletes
 
     private $pdo;
 
     public function __construct(PDO $pdo) {
         $this->pdo = $pdo;
+        $this->ativo = true; // Default to true for new users
     }
 
+    // ==========================================
     // Getters
-    public function getId() {
-        return $this->id;
+    // ==========================================
+    public function getIdUsuario() { // Fixed name
+        return $this->id_usuario;
     }
     public function getNome() {
         return $this->nome;
@@ -24,10 +28,15 @@ class Usuario {
     public function getCargo() {
         return $this->cargo;
     }
+    public function getAtivo() {
+        return $this->ativo;
+    }
 
+    // ==========================================
     // Setters
-    public function setId($id) {
-        $this->id = $id;
+    // ==========================================
+    public function setIdUsuario($id_usuario) { // Fixed name
+        $this->id_usuario = $id_usuario;
     }
     public function setNome($nome) {
         $this->nome = $nome;
@@ -38,53 +47,75 @@ class Usuario {
     public function setCargo($cargo) {
         $this->cargo = $cargo;
     }
+    public function setAtivo($ativo) {
+        $this->ativo = $ativo;
+    }
 
+    // ==========================================
+    // CRUD Operations
+    // ==========================================
     public function save() {
-        if ($this->id) {
-            $sql = "UPDATE usuario SET nome = :n, email = :e, cargo = :c WHERE id = :id";
+        if ($this->id_usuario) { // Fixed: was $this->id
+            $sql = "UPDATE Usuario SET Nome = :n, Email = :e, Cargo = :c, Ativo = :a WHERE Id_usuario = :id";
             $stmt = $this->pdo->prepare($sql);
             return $stmt->execute([
-                ':n' => $this->nome,
-                ':e' => $this->email,
-                ':c' => $this->cargo,
-                ':id' => $this->id
+                ':n'  => $this->nome,
+                ':e'  => $this->email,
+                ':c'  => $this->cargo,
+                ':a'  => $this->ativo ? 1 : 0, // Ensure boolean is handled correctly
+                ':id' => $this->id_usuario
             ]);
         } else {
-            $sql = "INSERT INTO usuario (nome, email, cargo) VALUES (:n, :e, :c)";
+            $sql = "INSERT INTO Usuario (Nome, Email, Cargo, Ativo) VALUES (:n, :e, :c, :a)";
             $stmt = $this->pdo->prepare($sql);
             $ok = $stmt->execute([
                 ':n' => $this->nome,
                 ':e' => $this->email,
-                ':c' => $this->cargo
+                ':c' => $this->cargo,
+                ':a' => $this->ativo ? 1 : 0
             ]);
+            
             if ($ok) {
-                $this->id = $this->pdo->lastInsertId();
+                $this->id_usuario = $this->pdo->lastInsertId(); // Fixed: was $this->id
             }
             return $ok;
         }
     }
 
-    public function load($id) {
-        $stmt = $this->pdo->prepare("SELECT * FROM usuario WHERE id = :id");
-        $stmt->execute([':id' => $id]);
+    public function load($id_usuario) {
+        $stmt = $this->pdo->prepare("SELECT * FROM Usuario WHERE Id_usuario = :id");
+        $stmt->execute([':id' => $id_usuario]);
+        
         if ($dados = $stmt->fetch(PDO::FETCH_ASSOC)) {
-            $this->id = $dados['id'];
-            $this->nome = $dados['nome'];
-            $this->email = $dados['email'];
-            $this->cargo = $dados['cargo'];
+            // Fixed: Matched array keys to the exact casing of the SQL schema
+            $this->id_usuario = $dados['Id_usuario'];
+            $this->nome       = $dados['Nome'];
+            $this->email      = $dados['Email'];
+            $this->cargo      = $dados['Cargo'];
+            $this->ativo      = (bool) $dados['Ativo'];
             return true;
         }
         return false;
     }
 
     public function delete() {
-        if (!$this->id) return false;
-        $stmt = $this->pdo->prepare("DELETE FROM usuario WHERE id = :id");
-        return $stmt->execute([':id' => $this->id]);
+        if (!$this->id_usuario) return false;
+        
+        // IMPLEMENTED SOFT DELETE: 
+        // Instead of deleting the row, we deactivate the user so sample records don't break.
+        $stmt = $this->pdo->prepare("UPDATE Usuario SET Ativo = FALSE WHERE Id_usuario = :id");
+        
+        $success = $stmt->execute([':id' => $this->id_usuario]);
+        if ($success) {
+            $this->ativo = false; // Update the object's state
+        }
+        return $success;
     }
 
-    public static function all(PDO $pdo) {
-        $stmt = $pdo->query("SELECT * FROM usuario");
+    public static function all(PDO $pdo, $onlyActive = true) {
+        // Optional feature: Fetch only active users by default
+        $sql = $onlyActive ? "SELECT * FROM Usuario WHERE Ativo = TRUE" : "SELECT * FROM Usuario";
+        $stmt = $pdo->query($sql);
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
 }
